@@ -17,6 +17,14 @@ $user = get_login_user($db);
 
 $item_id = get_post('item_id');
 
+$token = get_post('token');
+
+$result = is_valid_csrf_token($token);
+if ($result === false){
+  set_error('不正なページ遷移です。');
+  redirect_to(LOGIN_URL);
+}
+
 if(add_cart($db,$user['user_id'], $item_id)){
   set_message('カートに商品を追加しました。');
 } else {
