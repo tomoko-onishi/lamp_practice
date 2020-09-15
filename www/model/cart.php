@@ -2,6 +2,8 @@
 require_once MODEL_PATH . 'functions.php';
 require_once MODEL_PATH . 'db.php';
 
+$token = get_csrf_token();
+
 function get_user_carts($db, $user_id){
   $sql = "
     SELECT
