@@ -107,18 +107,39 @@ function purchase_carts($db, $carts){
   if(validate_cart_purchase($carts) === false){
     return false;
   }
-  foreach($carts as $cart){
-    if(update_item_stock(
-        $db, 
-        $cart['item_id'], 
-        $cart['stock'] - $cart['amount']
-      ) === false){
-      set_error($cart['name'] . 'の購入に失敗しました。');
+  $user_id = get_session('user_id');
+
+  //トランザクション開始
+  $db->beginTransaction();
+
+    if(insert_purchasehistories($db, $user_id) === false){
+      set_error('データ作成に失敗しました。');
     }
+    $order_id = $db->lastInsertId();
+    foreach($carts as $cart){
+      if(update_item_stock(
+          $db, 
+          $cart['item_id'], 
+          $cart['stock'] - $cart['amount']
+        ) === false){
+        set_error($cart['name'] . 'の購入に失敗しました。');
+      }
+        if(insert_purchasedetails($db, $order_id, $cart['item_id'], $cart['amount'], $cart['price']) === false){
+        set_error('データ作成に失敗しました。');
+      }
+    }
+    //トランザクション終了
+    $has_error = has_error();
+
+    if ($has_error === false){
+      $db->commit();
+    } else {
+      // ロールバック処理
+      $db->rollback();
+    }
+
+    delete_user_carts($db, $carts[0]['user_id']);
   }
-  
-  delete_user_carts($db, $carts[0]['user_id']);
-}
 
 function delete_user_carts($db, $user_id){
   $sql = "
@@ -159,3 +180,27 @@ function validate_cart_purchase($carts){
   return true;
 }
 
+function insert_purchasehistories($db, $user_id){
+  $sql = "
+    INSERT INTO
+      purchasehistories(
+        user_id
+      )
+    VALUES(?)
+  ";
+  return execute_query($db, $sql, array($user_id));
+ }
+
+ function insert_purchasedetails($db, $order_id, $item_id, $amount, $purchase_price){
+  $sql = "
+    INSERT INTO
+      purchasedetails(
+        order_id,
+	      item_id,
+	      amount,
+	      purchase_price
+      )
+    VALUES(?, ?, ? ,?)
+  ";
+  return execute_query($db, $sql, array($order_id, $item_id, $amount, $purchase_price)); 
+  }
