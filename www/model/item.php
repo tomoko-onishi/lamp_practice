@@ -206,3 +206,28 @@ function is_valid_item_status($status){
   }
   return $is_valid;
 }
+
+function get_ramking($db){
+  $sql = "
+    SELECT
+      items.item_id,
+      items.name,
+      items.price,
+      items.image,
+      items.stock
+    FROM
+      items
+    JOIN
+      purchasedetails
+    ON
+      purchasedetails.item_id = items.item_id
+    WHERE
+      items.status = 1
+    GROUP BY
+      purchasedetails.item_id
+    ORDER BY
+      SUM(purchasedetails.amount) DESC
+    LIMIT 3
+  ";
+  return fetch_all_query($db, $sql);
+}

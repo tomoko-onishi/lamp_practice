@@ -16,5 +16,6 @@ $db = get_db_connect();
 $user = get_login_user($db);
 
 $items = get_open_items($db);
+$ramking = get_ramking($db);
 
 include_once VIEW_PATH . 'index_view.php';

@@ -42,6 +42,38 @@
       <?php } ?>
       </div>
     </div>
+
+    <h1>ランキング</h1>
+    <div class="card-deck">
+      <div class="row">
+      <?php foreach($ramking as $key => $ramking){ ?>
+        <div class="col-6 item">
+          <div class="card h-100 text-center">
+            <div class="card-header">
+              <?php print $key +1;?>位
+              <?php print(h($ramking['name'])); ?>
+            </div>
+            <figure class="card-body">
+              <img class="card-img" src="<?php print(IMAGE_PATH . $ramking['image']); ?>">
+              <figcaption>
+                <?php print(number_format($ramking['price'])); ?>円
+                <?php if($ramking['stock'] > 0){ ?>
+                  <form action="index_add_cart.php" method="post">
+                    <input type="submit" value="カートに追加" class="btn btn-primary btn-block">
+                    <input type="hidden" name="item_id" value="<?php print($ramking['item_id']); ?>">
+                    <input type="hidden" name="token" value="<?php print($token)?>">
+                  </form>
+                <?php } else { ?>
+                  <p class="text-danger">現在売り切れです。</p>
+                <?php } ?>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      <?php } ?>
+      </div>
+    </div>
+
   </div>
   
 </body>
